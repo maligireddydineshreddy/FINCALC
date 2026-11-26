@@ -1026,9 +1026,11 @@ function calcInterest() {
     maturity = P*Math.pow(1+r_monthly*12, years)*(1+r_monthly*remMonths); interest = maturity-P;
   }
   const retPct = P>0 ? interest/P*100 : 0;
-  document.getElementById('int-result-eyebrow').textContent = intType==='simple' ? 'Simple Interest' : 'Compound Interest';
-  document.getElementById('int-interest').textContent = fmtDec(interest);
-  document.getElementById('int-result-sub').textContent = `on ₹${Math.round(P).toLocaleString('en-IN')} for ${months.toFixed(2)} months${intType==='compound'?' · compounded every 12 months':''}`;
+  document.getElementById('int-result-eyebrow').textContent = intType==='simple' ? 'Simple Interest' : 'Total Amount';
+  document.getElementById('int-interest').textContent = intType==='simple' ? fmtDec(interest) : fmtDec(maturity);
+  document.getElementById('int-result-sub').textContent = intType==='simple'
+    ? `on ₹${Math.round(P).toLocaleString('en-IN')} for ${months.toFixed(2)} months`
+    : `interest ₹${fmtDec(interest)} · on ₹${Math.round(P).toLocaleString('en-IN')} for ${months.toFixed(2)} months · compounded every 12 months`;
   document.getElementById('int-p-tile').textContent = fmt(P);
   document.getElementById('int-i-tile').textContent = fmtDec(interest);
   document.getElementById('int-t-tile').textContent = fmtDec(maturity);
