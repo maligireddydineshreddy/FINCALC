@@ -1030,7 +1030,7 @@ function calcInterest() {
   document.getElementById('int-interest').textContent = intType==='simple' ? fmtDec(interest) : fmtDec(maturity);
   document.getElementById('int-result-sub').textContent = intType==='simple'
     ? `on ₹${Math.round(P).toLocaleString('en-IN')} for ${months.toFixed(2)} months`
-    : `interest ₹${fmtDec(interest)} · on ₹${Math.round(P).toLocaleString('en-IN')} for ${months.toFixed(2)} months · compounded every 12 months`;
+    : '';
   document.getElementById('int-p-tile').textContent = fmt(P);
   document.getElementById('int-i-tile').textContent = fmtDec(interest);
   document.getElementById('int-t-tile').textContent = fmtDec(maturity);
