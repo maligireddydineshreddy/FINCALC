@@ -364,6 +364,73 @@ body::before {
 }
 .error-msg.show { display: block; }
 
+.rate-type-wrap {
+  display: flex;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px;
+  gap: 2px;
+}
+.rate-type-btn {
+  padding: 4px 10px;
+  border: none;
+  background: none;
+  color: var(--fg-muted);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 20px;
+  transition: background .15s, color .15s;
+}
+.rate-type-btn.active { background: var(--accent); color: #fff; }
+
+.settings-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.sw-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 1;
+  font-size: 13px;
+  color: var(--fg-secondary);
+}
+.sw-input { display: none; }
+.sw-track {
+  display: block;
+  width: 36px;
+  height: 20px;
+  background: var(--border);
+  border-radius: 20px;
+  cursor: pointer;
+  position: relative;
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.sw-track::after {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  top: 2px; left: 2px;
+  transition: transform .2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.sw-input:checked + .sw-track { background: var(--accent); }
+.sw-input:checked + .sw-track::after { transform: translateX(16px); }
+
+.period-opt { padding: 6px 12px !important; font-size: 12px !important; }
+
 .card-divider { height: 1px; background: var(--border); margin: 16px 0; }
 
 .loan-pair {
@@ -664,6 +731,15 @@ body::before {
           <button class="toggle-opt active" data-type="compound" id="toggle-compound">Compound</button>
         </div>
       </div>
+      <div id="int-period-row" style="margin-bottom:16px;">
+        <label class="field-label" style="display:block;margin-bottom:8px;">Compound every</label>
+        <div class="toggle-wrap" id="period-toggle">
+          <button class="toggle-opt period-opt" data-period="1">1 m</button>
+          <button class="toggle-opt period-opt" data-period="3">3 m</button>
+          <button class="toggle-opt period-opt" data-period="6">6 m</button>
+          <button class="toggle-opt period-opt active" data-period="12">12 m</button>
+        </div>
+      </div>
       <div class="field">
         <label class="field-label" for="int-principal">Principal Amount</label>
         <div class="input-wrap">
@@ -673,11 +749,30 @@ body::before {
       </div>
       <div class="card-divider"></div>
       <div class="field">
-        <label class="field-label" for="int-rate">Interest Rate (% per month)</label>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <label class="field-label" for="int-rate" style="margin:0;">Interest Rate</label>
+          <div class="rate-type-wrap">
+            <button class="rate-type-btn active" id="rate-monthly">/ month</button>
+            <button class="rate-type-btn" id="rate-yearly">/ year</button>
+          </div>
+        </div>
         <div class="input-wrap">
           <input class="text-input has-suffix" type="number" id="int-rate" min="0" step="0.01" inputmode="decimal" value="2">
           <span class="input-suffix">%</span>
         </div>
+      </div>
+      <div class="card-divider"></div>
+      <div class="settings-row">
+        <label class="sw-label">
+          <span>Allow fractions</span>
+          <input type="checkbox" id="allow-fractions" class="sw-input">
+          <label for="allow-fractions" class="sw-track"></label>
+        </label>
+        <label class="sw-label" id="int-exemption-row">
+          <span>Exemption</span>
+          <input type="checkbox" id="allow-exemption" class="sw-input">
+          <label for="allow-exemption" class="sw-track"></label>
+        </label>
       </div>
       <div class="card-divider"></div>
       <div class="field-row">
@@ -971,69 +1066,173 @@ retBtn.classList.add('has-value');
 
 let intType = 'compound';
 
-document.querySelectorAll('.toggle-opt').forEach(btn => {
+// Simple/Compound toggle (data-type buttons only)
+document.querySelectorAll('[data-type]').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.toggle-opt').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('[data-type]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     intType = btn.dataset.type;
+    document.getElementById('int-period-row').hidden = intType !== 'compound';
+    document.getElementById('int-exemption-row').style.display = intType !== 'compound' ? 'none' : '';
     calcInterest();
   });
 });
 
-function daysBetween(d1, d2) {
-  const y1=d1.getFullYear(),m1=d1.getMonth()+1,day1=d1.getDate();
-  const y2=d2.getFullYear(),m2=d2.getMonth()+1,day2=d2.getDate();
-  return (y2-y1)*360+(m2-m1)*30+(day2-day1);
+// Period toggle
+document.querySelectorAll('.period-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.period-opt').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    calcInterest();
+  });
+});
+
+// Rate type toggle
+document.getElementById('rate-monthly').addEventListener('click', () => {
+  document.getElementById('rate-monthly').classList.add('active');
+  document.getElementById('rate-yearly').classList.remove('active');
+  calcInterest();
+});
+document.getElementById('rate-yearly').addEventListener('click', () => {
+  document.getElementById('rate-yearly').classList.add('active');
+  document.getElementById('rate-monthly').classList.remove('active');
+  calcInterest();
+});
+
+// Settings toggles
+['allow-fractions','allow-exemption'].forEach(id => {
+  document.getElementById(id).addEventListener('change', calcInterest);
+});
+
+// Calendar-based period decomposition (matches reference app algorithm)
+function calcPeriod(d1, d2) {
+  let gd=d1.getDate(), gm=d1.getMonth()+1, gy=d1.getFullYear();
+  let rd=d2.getDate(), rm=d2.getMonth()+1, ry=d2.getFullYear();
+  let days = rd - gd;
+  if (days < 0) { days += 30; rm--; }
+  let months = rm - gm;
+  if (months < 0) { months += 12; ry--; }
+  let years = ry - gy;
+  return {years, months, days};
 }
+
+// Monthly interest on amount A
+function monthlyM(A, rate, allowFracs) {
+  if (allowFracs) return (A / 100) * rate;
+  return Math.floor(A / 100) * rate;
+}
+
+// Half-up rounding to whole rupees
+function roundHalfUp(x) { return Math.floor(x + 0.5); }
 
 function calcInterest() {
   const P = parseAmt('int-principal');
-  const monthlyRate = parseFloat(document.getElementById('int-rate').value);
+  const rateInput = parseFloat(document.getElementById('int-rate').value) || 0;
   const givenVal = document.getElementById('int-given').value;
   const returnVal = document.getElementById('int-return').value;
+  const allowFracs = document.getElementById('allow-fractions').checked;
+  const allowExemption = document.getElementById('allow-exemption').checked;
+  const rateIsYearly = document.getElementById('rate-yearly').classList.contains('active');
   const durationRow = document.getElementById('int-duration-row');
   const dateErr = document.getElementById('int-date-err');
 
   durationRow.hidden = !(givenVal && returnVal);
 
+  const rate = rateIsYearly ? rateInput / 12 : rateInput;
+
   if (givenVal && returnVal) {
-    const days = daysBetween(new Date(givenVal), new Date(returnVal));
-    if (days < 0) {
+    const {years:ys, months:ms, days:ds} = calcPeriod(new Date(givenVal), new Date(returnVal));
+    const isNeg = ys < 0 || (ys===0 && ms<0) || (ys===0 && ms===0 && ds<0);
+    if (isNeg) {
       dateErr.classList.add('show');
       setHidden('int-result-card',true); setHidden('int-breakdown',true); setHidden('int-placeholder',false);
       document.getElementById('int-duration-pill').textContent = '—';
       return;
     }
     dateErr.classList.remove('show');
-    const months=days/30, wholeMo=Math.floor(months), remDays=days-wholeMo*30;
-    document.getElementById('int-duration-pill').textContent =
-      wholeMo>0&&remDays>0 ? `${days} days · ${wholeMo} month${wholeMo!==1?'s':''} ${remDays} day${remDays!==1?'s':''}` :
-      wholeMo>0 ? `${days} days · ${wholeMo} month${wholeMo!==1?'s':''}` : `${days} days`;
+    const parts=[];
+    if (ys>0) parts.push(`${ys} yr${ys!==1?'s':''}`);
+    if (ms>0) parts.push(`${ms} mo${ms!==1?'s':''}`);
+    if (ds>0) parts.push(`${ds} day${ds!==1?'s':''}`);
+    if (parts.length===0) parts.push('0 days');
+    document.getElementById('int-duration-pill').textContent = parts.join(' · ');
   }
 
-  const days2 = (givenVal&&returnVal) ? daysBetween(new Date(givenVal),new Date(returnVal)) : null;
-  const valid = P>0 && monthlyRate>=0 && days2!==null && days2>=0;
+  if (!givenVal || !returnVal) {
+    setHidden('int-result-card',true); setHidden('int-breakdown',true); setHidden('int-placeholder',false);
+    return;
+  }
+
+  const {years, months, days} = calcPeriod(new Date(givenVal), new Date(returnVal));
+  const isNeg2 = years<0 || (years===0&&months<0) || (years===0&&months===0&&days<0);
+  const valid = P>=100 && rate>0 && !isNeg2;
   setHidden('int-result-card',!valid); setHidden('int-breakdown',!valid); setHidden('int-placeholder',valid);
   if (!valid) return;
 
-  const months=days2/30, r_monthly=monthlyRate/100;
-  let interest, maturity;
-  if (intType==='simple') {
-    interest = P*r_monthly*months; maturity = P+interest;
+  let interest, total;
+
+  if (intType === 'simple') {
+    const M = monthlyM(P, rate, allowFracs);
+    interest = (years*12 + months)*M + days*M/30;
+    total = P + interest;
   } else {
-    // Village convention: simple interest within a year, added to principal every 12 months
-    const years = Math.floor(days2/360), remMonths = (days2 - years*360)/30;
-    maturity = P*Math.pow(1+r_monthly*12, years)*(1+r_monthly*remMonths); interest = maturity-P;
+    const P_period = parseInt(document.querySelector('.period-opt.active').dataset.period);
+    const allMonths = years*12 + months;
+
+    if (allMonths < P_period) {
+      // Not enough time for one compound period — treat as simple
+      const M = monthlyM(P, rate, allowFracs);
+      interest = allMonths*M + days*M/30;
+      total = P + interest;
+    } else {
+      let count, remainingMonths;
+      if (P_period === 12) {
+        count = years;
+        remainingMonths = months;
+      } else {
+        count = Math.floor(allMonths / P_period);
+        remainingMonths = allMonths % P_period;
+      }
+
+      const startCount = count;
+      const keep = allowExemption ? 1 : 0;
+      let A = P;
+
+      while (count > keep) {
+        const M = monthlyM(A, rate, allowFracs);
+        A = A + M * P_period;
+        count--;
+      }
+
+      const M_last = monthlyM(A, rate, allowFracs);
+      let last = remainingMonths * M_last + days * M_last / 30;
+
+      if (allowExemption && startCount > 0) {
+        last = last + M_last * 12; // intentional: adds 12-month interest on last period
+      }
+
+      total = A + last;
+      interest = total - P;
+    }
   }
+
+  if (!allowFracs) {
+    interest = roundHalfUp(interest);
+    total = roundHalfUp(total);
+  }
+
   const retPct = P>0 ? interest/P*100 : 0;
+  const fi = allowFracs ? fmtDec(interest) : fmt(interest);
+  const ft = allowFracs ? fmtDec(total) : fmt(total);
+
   document.getElementById('int-result-eyebrow').textContent = intType==='simple' ? 'Simple Interest' : 'Total Amount';
-  document.getElementById('int-interest').textContent = intType==='simple' ? fmtDec(interest) : fmtDec(maturity);
+  document.getElementById('int-interest').textContent = intType==='simple' ? fi : ft;
   document.getElementById('int-result-sub').textContent = intType==='simple'
-    ? `on ₹${Math.round(P).toLocaleString('en-IN')} for ${months.toFixed(2)} months`
+    ? `on ₹${Math.round(P).toLocaleString('en-IN')} for ${years*12+months} mo ${days} d`
     : '';
   document.getElementById('int-p-tile').textContent = fmt(P);
-  document.getElementById('int-i-tile').textContent = fmtDec(interest);
-  document.getElementById('int-t-tile').textContent = fmtDec(maturity);
+  document.getElementById('int-i-tile').textContent = fi;
+  document.getElementById('int-t-tile').textContent = ft;
   document.getElementById('int-pct-tile').textContent = retPct.toFixed(2)+'%';
   document.getElementById('int-pct-label').textContent = 'Return %';
 }
