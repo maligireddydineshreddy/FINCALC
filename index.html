@@ -386,24 +386,7 @@ body::before {
 }
 .rate-type-btn.active { background: var(--accent); color: #fff; }
 
-.settings-row {
-  display: flex;
-  gap: 12px;
-  margin-top: 12px;
-  padding: 10px 12px;
-  background: var(--surface-2);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-}
-.sw-label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  flex: 1;
-  font-size: 13px;
-  color: var(--fg-secondary);
-}
+.sw-wrap { display: flex; align-items: center; flex-shrink: 0; }
 .sw-input { display: none; }
 .sw-track {
   display: block;
@@ -430,6 +413,40 @@ body::before {
 .sw-input:checked + .sw-track::after { transform: translateX(16px); }
 
 .period-opt { padding: 6px 12px !important; font-size: 12px !important; }
+
+.card-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  margin: -20px -20px 20px -20px;
+  padding: 0 4px;
+  gap: 0;
+}
+.card-tab {
+  padding: 11px 16px;
+  border: none;
+  background: none;
+  color: var(--fg-muted);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color .15s, border-color .15s;
+}
+.card-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
+.settings-section { display: flex; flex-direction: column; gap: 0; }
+.settings-row-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.settings-row-item:last-child { border-bottom: none; }
+.settings-item-label { font-size: 14px; color: var(--fg-primary); }
+.settings-item-sub { font-size: 12px; color: var(--fg-muted); margin-top: 2px; }
 
 .card-divider { height: 1px; background: var(--border); margin: 16px 0; }
 
@@ -725,79 +742,107 @@ body::before {
 
   <div class="tab-panel active" id="tab-interest">
     <div class="card">
-      <div style="margin-bottom:18px;">
-        <div class="toggle-wrap">
-          <button class="toggle-opt" data-type="simple" id="toggle-simple">Simple</button>
-          <button class="toggle-opt active" data-type="compound" id="toggle-compound">Compound</button>
-        </div>
+      <div class="card-tabs">
+        <button class="card-tab active" id="int-tab-calc">Calculate</button>
+        <button class="card-tab" id="int-tab-settings">Settings</button>
       </div>
-      <div id="int-period-row" style="margin-bottom:16px;">
-        <label class="field-label" style="display:block;margin-bottom:8px;">Compound every</label>
-        <div class="toggle-wrap" id="period-toggle">
-          <button class="toggle-opt period-opt" data-period="1">1 m</button>
-          <button class="toggle-opt period-opt" data-period="3">3 m</button>
-          <button class="toggle-opt period-opt" data-period="6">6 m</button>
-          <button class="toggle-opt period-opt active" data-period="12">12 m</button>
-        </div>
-      </div>
-      <div class="field">
-        <label class="field-label" for="int-principal">Principal Amount</label>
-        <div class="input-wrap">
-          <span class="input-prefix">₹</span>
-          <input class="text-input has-prefix" type="text" id="int-principal" inputmode="numeric" autocomplete="off">
-        </div>
-      </div>
-      <div class="card-divider"></div>
-      <div class="field">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-          <label class="field-label" for="int-rate" style="margin:0;">Interest Rate</label>
-          <div class="rate-type-wrap">
-            <button class="rate-type-btn active" id="rate-monthly">/ month</button>
-            <button class="rate-type-btn" id="rate-yearly">/ year</button>
+
+      <!-- Calculate panel -->
+      <div id="int-panel-calc">
+        <div style="margin-bottom:18px;">
+          <div class="toggle-wrap">
+            <button class="toggle-opt" data-type="simple" id="toggle-simple">Simple</button>
+            <button class="toggle-opt active" data-type="compound" id="toggle-compound">Compound</button>
           </div>
         </div>
-        <div class="input-wrap">
-          <input class="text-input has-suffix" type="number" id="int-rate" min="0" step="0.01" inputmode="decimal" value="2">
-          <span class="input-suffix">%</span>
-        </div>
-      </div>
-      <div class="card-divider"></div>
-      <div class="settings-row">
-        <label class="sw-label">
-          <span>Allow fractions</span>
-          <input type="checkbox" id="allow-fractions" class="sw-input">
-          <label for="allow-fractions" class="sw-track"></label>
-        </label>
-        <label class="sw-label" id="int-exemption-row">
-          <span>Exemption</span>
-          <input type="checkbox" id="allow-exemption" class="sw-input">
-          <label for="allow-exemption" class="sw-track"></label>
-        </label>
-      </div>
-      <div class="card-divider"></div>
-      <div class="field-row">
         <div class="field">
-          <div class="field-label">Given Date</div>
-          <button class="date-btn" id="int-given-btn" onclick="openPicker('given')">
-            <span>Select date</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          </button>
-          <input type="hidden" id="int-given">
+          <label class="field-label" for="int-principal">Principal Amount</label>
+          <div class="input-wrap">
+            <span class="input-prefix">₹</span>
+            <input class="text-input has-prefix" type="text" id="int-principal" inputmode="numeric" autocomplete="off">
+          </div>
         </div>
+        <div class="card-divider"></div>
         <div class="field">
-          <div class="field-label">Return Date</div>
-          <button class="date-btn" id="int-return-btn" onclick="openPicker('return')">
-            <span>Select date</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          </button>
-          <input type="hidden" id="int-return">
+          <label class="field-label" for="int-rate">Interest Rate</label>
+          <div class="input-wrap">
+            <input class="text-input has-suffix" type="number" id="int-rate" min="0" step="0.01" inputmode="decimal" value="2">
+            <span class="input-suffix" id="rate-suffix">% / mo</span>
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="field-row">
+          <div class="field">
+            <div class="field-label">Given Date</div>
+            <button class="date-btn" id="int-given-btn" onclick="openPicker('given')">
+              <span>Select date</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </button>
+            <input type="hidden" id="int-given">
+          </div>
+          <div class="field">
+            <div class="field-label">Return Date</div>
+            <button class="date-btn" id="int-return-btn" onclick="openPicker('return')">
+              <span>Select date</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </button>
+            <input type="hidden" id="int-return">
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <button class="calc-btn" id="int-calc-btn">Calculate</button>
+        <div id="int-duration-row" hidden style="margin-top:10px;">
+          <div class="duration-pill" id="int-duration-pill">—</div>
+          <div id="int-date-err" class="error-msg">Return date must be after given date</div>
         </div>
       </div>
-      <div class="card-divider"></div>
-      <button class="calc-btn" id="int-calc-btn">Calculate</button>
-      <div id="int-duration-row" hidden style="margin-top:10px;">
-        <div class="duration-pill" id="int-duration-pill">— days · — months</div>
-        <div id="int-date-err" class="error-msg">Return date must be after given date</div>
+
+      <!-- Settings panel -->
+      <div id="int-panel-settings" hidden>
+        <div class="settings-section">
+          <div class="settings-row-item">
+            <div>
+              <div class="settings-item-label">Rate period</div>
+              <div class="settings-item-sub">How the interest rate is entered</div>
+            </div>
+            <div class="rate-type-wrap">
+              <button class="rate-type-btn active" id="rate-monthly">/ month</button>
+              <button class="rate-type-btn" id="rate-yearly">/ year</button>
+            </div>
+          </div>
+          <div class="settings-row-item" id="int-period-row">
+            <div>
+              <div class="settings-item-label">Compound every</div>
+              <div class="settings-item-sub">Interest added to principal after each period</div>
+            </div>
+            <div class="toggle-wrap" id="period-toggle" style="flex-shrink:0;">
+              <button class="toggle-opt period-opt" data-period="1">1 m</button>
+              <button class="toggle-opt period-opt" data-period="3">3 m</button>
+              <button class="toggle-opt period-opt" data-period="6">6 m</button>
+              <button class="toggle-opt period-opt active" data-period="12">12 m</button>
+            </div>
+          </div>
+          <div class="settings-row-item">
+            <div>
+              <div class="settings-item-label">Allow fractions</div>
+              <div class="settings-item-sub">Use exact paise in calculations</div>
+            </div>
+            <div class="sw-wrap">
+              <input type="checkbox" id="allow-fractions" class="sw-input">
+              <label for="allow-fractions" class="sw-track"></label>
+            </div>
+          </div>
+          <div class="settings-row-item" id="int-exemption-row">
+            <div>
+              <div class="settings-item-label">Exemption</div>
+              <div class="settings-item-sub">Last compound period treated as simple</div>
+            </div>
+            <div class="sw-wrap">
+              <input type="checkbox" id="allow-exemption" class="sw-input">
+              <label for="allow-exemption" class="sw-track"></label>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="result-card" id="int-result-card" hidden>
@@ -1087,15 +1132,35 @@ document.querySelectorAll('.period-opt').forEach(btn => {
   });
 });
 
+// Card tabs (Calculate / Settings)
+document.getElementById('int-tab-calc').addEventListener('click', () => {
+  document.getElementById('int-tab-calc').classList.add('active');
+  document.getElementById('int-tab-settings').classList.remove('active');
+  document.getElementById('int-panel-calc').hidden = false;
+  document.getElementById('int-panel-settings').hidden = true;
+});
+document.getElementById('int-tab-settings').addEventListener('click', () => {
+  document.getElementById('int-tab-settings').classList.add('active');
+  document.getElementById('int-tab-calc').classList.remove('active');
+  document.getElementById('int-panel-settings').hidden = false;
+  document.getElementById('int-panel-calc').hidden = true;
+});
+
 // Rate type toggle
+function updateRateSuffix() {
+  const isYearly = document.getElementById('rate-yearly').classList.contains('active');
+  document.getElementById('rate-suffix').textContent = isYearly ? '% / yr' : '% / mo';
+}
 document.getElementById('rate-monthly').addEventListener('click', () => {
   document.getElementById('rate-monthly').classList.add('active');
   document.getElementById('rate-yearly').classList.remove('active');
+  updateRateSuffix();
   calcInterest();
 });
 document.getElementById('rate-yearly').addEventListener('click', () => {
   document.getElementById('rate-yearly').classList.add('active');
   document.getElementById('rate-monthly').classList.remove('active');
+  updateRateSuffix();
   calcInterest();
 });
 
