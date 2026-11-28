@@ -1138,12 +1138,18 @@ document.getElementById('int-tab-calc').addEventListener('click', () => {
   document.getElementById('int-tab-settings').classList.remove('active');
   document.getElementById('int-panel-calc').hidden = false;
   document.getElementById('int-panel-settings').hidden = true;
+  // restore result visibility
+  calcInterest();
 });
 document.getElementById('int-tab-settings').addEventListener('click', () => {
   document.getElementById('int-tab-settings').classList.add('active');
   document.getElementById('int-tab-calc').classList.remove('active');
   document.getElementById('int-panel-settings').hidden = false;
   document.getElementById('int-panel-calc').hidden = true;
+  // hide results on settings tab
+  setHidden('int-result-card', true);
+  setHidden('int-breakdown', true);
+  setHidden('int-placeholder', true);
 });
 
 // Rate type toggle
