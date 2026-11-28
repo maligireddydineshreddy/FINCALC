@@ -995,7 +995,7 @@ function attachCommaInput(id) {
     const before = el.value.slice(0, pos).replace(/,/g, '').length;
     const formatted = fmtIndian(el.value);
     el.value = formatted;
-    let count = 0, newPos = 0;
+    let count = 0, newPos = formatted.length; // default to end when string shrinks
     for (let i = 0; i < formatted.length; i++) {
       if (formatted[i] !== ',') count++;
       if (count === before) { newPos = i + 1; break; }
@@ -1031,8 +1031,8 @@ document.getElementById('emi-calc-btn').addEventListener('click', calcEMI);
 const ITEM_H = 44;
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const CUR_YEAR = new Date().getFullYear();
-const YEAR_START = CUR_YEAR - 30;
-const YEAR_END = CUR_YEAR + 5;
+const YEAR_START = 1900;
+const YEAR_END = CUR_YEAR + 30;
 
 const dayCol = document.getElementById('picker-day');
 const moCol = document.getElementById('picker-month');
@@ -1089,7 +1089,9 @@ function openPicker(target) {
 
 function closePicker(save) {
   if (save) {
-    const d=getIdx(dayCol)+1, m=getIdx(moCol), y=YEAR_START+getIdx(yrCol);
+    const d=Math.max(1,Math.min(31,getIdx(dayCol)+1));
+    const m=Math.max(0,Math.min(11,getIdx(moCol)));
+    const y=Math.max(YEAR_START,Math.min(YEAR_END,YEAR_START+getIdx(yrCol)));
     const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     document.getElementById('int-'+pickerTarget).value = dateStr;
     const btn = document.getElementById('int-'+pickerTarget+'-btn');
@@ -1290,6 +1292,11 @@ function calcInterest() {
       total = A + last;
       interest = total - P;
     }
+  }
+
+  if (isNaN(interest) || isNaN(total)) {
+    setHidden('int-result-card', true); setHidden('int-breakdown', true); setHidden('int-placeholder', false);
+    return;
   }
 
   if (!allowFracs) {
