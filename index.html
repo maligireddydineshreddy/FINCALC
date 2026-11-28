@@ -254,6 +254,8 @@ body::before {
   font-variant-numeric: tabular-nums;
   letter-spacing: -1px;
   line-height: 1.1;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .result-sub {
@@ -292,6 +294,8 @@ body::before {
   font-family: 'DM Sans', system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   letter-spacing: -.3px;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 .tile-value.accent { color: var(--accent); }
 .tile-value.positive { color: var(--positive); }
@@ -1309,6 +1313,12 @@ function calcInterest() {
   const retPct = P>0 ? interest/P*100 : 0;
   const fi = allowFracs ? fmtDec(interest) : fmt(interest);
   const ft = allowFracs ? fmtDec(total) : fmt(total);
+  const fmtPct = v => {
+    if (!isFinite(v)) return '—';
+    if (Math.abs(v) >= 1e6) return Math.round(v).toLocaleString('en-IN') + '%';
+    if (Math.abs(v) >= 100) return v.toFixed(1) + '%';
+    return v.toFixed(2) + '%';
+  };
 
   document.getElementById('int-result-eyebrow').textContent = 'Total Amount';
   document.getElementById('int-interest').textContent = ft;
@@ -1316,7 +1326,7 @@ function calcInterest() {
   document.getElementById('int-p-tile').textContent = fmt(P);
   document.getElementById('int-i-tile').textContent = fi;
   document.getElementById('int-t-tile').textContent = ft;
-  document.getElementById('int-pct-tile').textContent = retPct.toFixed(2)+'%';
+  document.getElementById('int-pct-tile').textContent = fmtPct(retPct);
   document.getElementById('int-pct-label').textContent = 'Return %';
 }
 
