@@ -1111,7 +1111,7 @@ retBtn.classList.add('has-value');
 
 let intType = 'compound';
 
-// Simple/Compound toggle (data-type buttons only)
+// Simple/Compound toggle — only updates mode; waits for Calculate button
 document.querySelectorAll('[data-type]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('[data-type]').forEach(b => b.classList.remove('active'));
@@ -1119,7 +1119,10 @@ document.querySelectorAll('[data-type]').forEach(btn => {
     intType = btn.dataset.type;
     document.getElementById('int-period-row').hidden = intType !== 'compound';
     document.getElementById('int-exemption-row').style.display = intType !== 'compound' ? 'none' : '';
-    calcInterest();
+    // Clear results so stale values aren't shown for the new mode
+    setHidden('int-result-card', true);
+    setHidden('int-breakdown', true);
+    setHidden('int-placeholder', false);
   });
 });
 
@@ -1296,11 +1299,9 @@ function calcInterest() {
   const fi = allowFracs ? fmtDec(interest) : fmt(interest);
   const ft = allowFracs ? fmtDec(total) : fmt(total);
 
-  document.getElementById('int-result-eyebrow').textContent = intType==='simple' ? 'Simple Interest' : 'Total Amount';
-  document.getElementById('int-interest').textContent = intType==='simple' ? fi : ft;
-  document.getElementById('int-result-sub').textContent = intType==='simple'
-    ? `on ₹${Math.round(P).toLocaleString('en-IN')} for ${years*12+months} mo ${days} d`
-    : '';
+  document.getElementById('int-result-eyebrow').textContent = 'Total Amount';
+  document.getElementById('int-interest').textContent = ft;
+  document.getElementById('int-result-sub').textContent = '';
   document.getElementById('int-p-tile').textContent = fmt(P);
   document.getElementById('int-i-tile').textContent = fi;
   document.getElementById('int-t-tile').textContent = ft;
