@@ -1119,10 +1119,10 @@ document.querySelectorAll('[data-type]').forEach(btn => {
     intType = btn.dataset.type;
     document.getElementById('int-period-row').hidden = intType !== 'compound';
     document.getElementById('int-exemption-row').style.display = intType !== 'compound' ? 'none' : '';
-    // Clear results so stale values aren't shown for the new mode
-    setHidden('int-result-card', true);
-    setHidden('int-breakdown', true);
-    setHidden('int-placeholder', false);
+    // Clear stale results when mode changes
+    document.getElementById('int-result-card').hidden = true;
+    document.getElementById('int-breakdown').hidden = true;
+    document.getElementById('int-placeholder').hidden = false;
   });
 });
 
