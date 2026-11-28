@@ -973,7 +973,7 @@ const fmtDec = n => '₹' + n.toLocaleString('en-IN', {minimumFractionDigits: 2,
 function setHidden(id, hide) { document.getElementById(id).hidden = hide; }
 
 function fmtIndian(raw) {
-  const digits = raw.replace(/[^0-9]/g, '');
+  const digits = raw.replace(/[^0-9]/g, '').replace(/^0+(\d)/, '$1');
   if (!digits) return '';
   if (digits.length <= 3) return digits;
   const last3 = digits.slice(-3);
